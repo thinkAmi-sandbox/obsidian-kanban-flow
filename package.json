@@ -1,0 +1,31 @@
+{
+  "name": "obsidian-kanban-flow",
+  "version": "0.0.1",
+  "description": "Personal lightweight Kanban board for Obsidian (Svelte 5).",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "svelte-dnd-action": "^0.9.69"
+  },
+  "devDependencies": {
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/node": "^20.19.43",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.21.5",
+    "esbuild-svelte": "^0.8.2",
+    "obsidian": "^1.5.7-1",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "svelte-preprocess": "^6.0.0",
+    "tslib": "^2.6.3",
+    "typescript": "^5.4.5",
+    "vitest": "^2.0.0"
+  }
+}
