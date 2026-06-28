@@ -1,0 +1,9 @@
+{
+  "id": "obsidian-kanban-flow",
+  "name": "Kanban Flow",
+  "version": "0.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Personal lightweight, markdown-backed Kanban board (Svelte 5). Upstream-compatible file format.",
+  "author": "thinkAmi",
+  "isDesktopOnly": true
+}

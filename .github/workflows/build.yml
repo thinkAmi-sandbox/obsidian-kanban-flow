@@ -1,0 +1,86 @@
+# Tag-triggered release build.
+#
+# The ONLY way to trigger this is to push a `v*` tag, and the only sanctioned way to create that
+# tag is `npm version patch|minor|major` (see package.json + scripts/version-bump.mjs). So forgetting
+# to bump the version simply means no release happens — it cannot silently ship a stale version.
+#
+# What this does on a tag push:
+#   1. Verify (typecheck / lint / test) and build the plugin into dist/.
+#   2. Generate SHA-256 checksums for the distributable files.
+#   3. Attest build provenance (SLSA) via keyless Sigstore signing — no secrets/keys required.
+#   4. Create a DRAFT GitHub Release with auto-generated notes and attach the assets.
+#
+# The release is left as a draft on purpose: review the auto-generated notes in the GitHub UI and
+# click Publish manually. Nothing is published automatically.
+name: Build
+
+on:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and draft release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and upload assets
+      id-token: write # OIDC token for keyless Sigstore signing (no stored secret)
+      attestations: write # store the build provenance attestation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          # Track the latest LTS at run time instead of pinning a major version, so the build
+          # does not break when a Node version is eventually dropped from the runners.
+          # Use 'latest' for the absolute newest (incl. Current) release instead.
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum main.js styles.css manifest.json > checksums.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            dist/main.js
+            dist/styles.css
+            dist/manifest.json
+
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --draft \
+            --generate-notes \
+            --title "${{ github.ref_name }}" \
+            dist/main.js \
+            dist/styles.css \
+            dist/manifest.json \
+            dist/checksums.txt
