@@ -1,0 +1,83 @@
+# Tag-triggered release build.
+#
+# The ONLY way to trigger this is to push a `v*` tag, and the only sanctioned way to create that
+# tag is `npm version patch|minor|major` (see package.json + scripts/version-bump.mjs). So forgetting
+# to bump the version simply means no release happens — it cannot silently ship a stale version.
+#
+# What this does on a tag push:
+#   1. Verify (typecheck / lint / test) and build the plugin into dist/.
+#   2. Generate SHA-256 checksums for the distributable files.
+#   3. Attest build provenance (SLSA) via keyless Sigstore signing — no secrets/keys required.
+#   4. Create a DRAFT GitHub Release with auto-generated notes and attach the assets.
+#
+# The release is left as a draft on purpose: review the auto-generated notes in the GitHub UI and
+# click Publish manually. Nothing is published automatically.
+name: Build
+
+on:
+  push:
+    tags: ['v*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and draft release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release and upload assets
+      id-token: write # OIDC token for keyless Sigstore signing (no stored secret)
+      attestations: write # store the build provenance attestation
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum main.js styles.css manifest.json > checksums.txt
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
+        with:
+          subject-path: |
+            dist/main.js
+            dist/styles.css
+            dist/manifest.json
+
+      - name: Create draft release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --draft \
+            --generate-notes \
+            --title "${{ github.ref_name }}" \
+            dist/main.js \
+            dist/styles.css \
+            dist/manifest.json \
+            dist/checksums.txt
