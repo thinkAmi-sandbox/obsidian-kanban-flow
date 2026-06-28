@@ -18,9 +18,20 @@
 
 ## 手順
 
+**前提**: 対象ブランチに upstream が設定されていること。upstream が無いと手順3の
+`git push --follow-tags` が `no upstream branch` で失敗し、タグも飛ばずワークフローも起動しない。
+初回は先に upstream を設定する:
+
 ```bash
-# 1. ワーキングツリーがクリーンで、対象ブランチが最新であることを確認
+git push -u origin <branch>   # 初回のみ。upstream 未設定のブランチで実行
+```
+
+（`/release` スキルは、upstream が無い場合はバンプもタグ作成も行わずに停止する。）
+
+```bash
+# 1. ワーキングツリーがクリーンで、upstream が設定済みであることを確認
 git status
+git rev-parse --abbrev-ref --symbolic-full-name @{u}   # upstream が無いとエラー
 
 # 2. バージョンを上げる（manifest.json も自動同期され、コミット＋タグが作られる）
 npm version patch        # patch / minor / major

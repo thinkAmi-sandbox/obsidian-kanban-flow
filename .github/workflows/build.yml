@@ -42,7 +42,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: '20'
+          # Track the latest LTS at run time instead of pinning a major version, so the build
+          # does not break when a Node version is eventually dropped from the runners.
+          # Use 'latest' for the absolute newest (incl. Current) release instead.
+          node-version: 'lts/*'
           cache: 'npm'
 
       - name: Install dependencies

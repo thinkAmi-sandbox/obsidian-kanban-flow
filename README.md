@@ -46,6 +46,7 @@ dist/
 ## リリース
 
 ```bash
+# 対象ブランチに upstream が無い初回のみ: git push -u origin <branch>
 npm version patch        # patch / minor / major。manifest.json も自動同期される
 git push --follow-tags   # v* タグ push で GitHub Actions が起動する
 ```
