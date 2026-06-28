@@ -26,6 +26,7 @@
     "builtin-modules": "^3.3.0",
     "esbuild": "^0.21.5",
     "esbuild-svelte": "^0.8.2",
+    "fast-check": "^4.8.0",
     "obsidian": "^1.5.7-1",
     "oxfmt": "^0.56.0",
     "oxlint": "^1.71.0",
