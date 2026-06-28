@@ -1,5 +1,6 @@
 import { Menu, Plugin, TFile, WorkspaceLeaf, debounce } from 'obsidian';
 import { KanbanView } from './KanbanView';
+import { confirmDialog } from './ui/confirm';
 import { BOARD_TEMPLATE, VIEW_TYPE, frontmatterKey } from './constants';
 
 export default class KanbanFlowPlugin extends Plugin {
@@ -21,6 +22,18 @@ export default class KanbanFlowPlugin extends Plugin {
         const canOpen = !!leaf && !!file && file.extension === 'md' && leaf.view.getViewType() !== VIEW_TYPE;
         if (canOpen && !checking) void this.setKanbanView(leaf);
         return canOpen;
+      },
+    });
+
+    this.addCommand({
+      id: 'archive-completed-cards',
+      name: '完了カードを年月別にアーカイブ',
+      checkCallback: (checking) => {
+        const view = this.app.workspace.getActiveViewOfType(KanbanView);
+        const count = view?.store?.completedCardCount() ?? 0;
+        if (count === 0) return false;
+        if (!checking) void this.archiveCompleted(view!, count);
+        return true;
       },
     });
 
@@ -74,6 +87,15 @@ export default class KanbanFlowPlugin extends Plugin {
           }),
       );
     }
+  }
+
+  private async archiveCompleted(view: KanbanView, count: number): Promise<void> {
+    const ok = await confirmDialog(this.app, {
+      title: '完了カードをアーカイブ',
+      message: `完了レーンのカード ${count} 件を年月別にアーカイブへ移動します。よろしいですか？`,
+      cta: 'アーカイブ',
+    });
+    if (ok) view.store?.archiveCompletedCards();
   }
 
   private async createNewBoard(): Promise<void> {

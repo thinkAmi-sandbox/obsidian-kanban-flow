@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ADDED_MARKER,
   DONE_MARKER,
+  archiveYearMonth,
   getAddedDate,
   getDoneDate,
   getDisplayTitle,
@@ -56,6 +57,29 @@ describe('metadata separation', () => {
 
   it('makeCardRaw stamps the registration date', () => {
     expect(makeCardRaw('買い物', '2026-06-27')).toBe(`- [ ] 買い物 ${ADDED_MARKER} 2026-06-27`);
+  });
+});
+
+// Year-month bucketing for the bulk archive (spec 4.3 / 5.6).
+describe('archiveYearMonth', () => {
+  const FALLBACK = '2026-06-27';
+
+  it('uses the completion (✅) date when present', () => {
+    const raw = `- [x] t ${ADDED_MARKER} 2026-05-01 ${DONE_MARKER} 2026-06-20`;
+    expect(archiveYearMonth(raw, FALLBACK)).toBe('2026-06');
+  });
+
+  it('falls back to the registration (➕) date when no completion date', () => {
+    const raw = `- [ ] t ${ADDED_MARKER} 2026-05-01`;
+    expect(archiveYearMonth(raw, FALLBACK)).toBe('2026-05');
+  });
+
+  it('falls back to the run date when the card has no metadata', () => {
+    expect(archiveYearMonth('- [x] no meta', FALLBACK)).toBe('2026-06');
+  });
+
+  it('accepts a fallback already in YYYY-MM form', () => {
+    expect(archiveYearMonth('- [x] no meta', '2026-06')).toBe('2026-06');
   });
 });
 

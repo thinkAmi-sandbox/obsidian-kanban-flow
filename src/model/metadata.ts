@@ -133,6 +133,16 @@ export function makeCardRaw(displayText: string, addedDate: string, checked = fa
   return `- [${checked ? 'x' : ' '}] ${displayText} ${ADDED_MARKER} ${addedDate}`;
 }
 
+/**
+ * The `YYYY-MM` bucket a card is archived under (spec 4.3/5.6): completion (✅) date, else
+ * registration (➕) date, else `fallback` (the archive run's local date). `fallback` may be a
+ * full `YYYY-MM-DD` or already a `YYYY-MM`; only the first 7 characters are used.
+ */
+export function archiveYearMonth(titleRaw: string, fallback: string): string {
+  const date = getDoneDate(titleRaw) ?? getAddedDate(titleRaw) ?? fallback;
+  return date.slice(0, 7);
+}
+
 function pickDate(tokens: MetaToken[], marker: string): string | null {
   const matching = tokens.filter((t) => t.marker === marker);
   return matching.length ? matching[matching.length - 1].date : null;

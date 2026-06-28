@@ -1,7 +1,9 @@
 <script lang="ts">
   import { getContext } from 'svelte';
+  import { Menu } from 'obsidian';
   import { dndzone } from 'svelte-dnd-action';
   import { KF_CONTEXT, type KfContext } from './context';
+  import { confirmDialog } from './confirm';
   import { autofocus } from './actions';
   import { CARD_DND_TYPE, FLIP_DURATION_MS, type DndColumn, type DndItem } from './dnd';
   import Card from './Card.svelte';
@@ -16,7 +18,7 @@
     onfinalize: (e: CustomEvent<{ items: DndItem[] }>) => void;
   } = $props();
 
-  const { store } = getContext<KfContext>(KF_CONTEXT);
+  const { store, app } = getContext<KfContext>(KF_CONTEXT);
 
   let adding = $state(false);
   let draft = $state('');
@@ -50,12 +52,42 @@
       cancelAdd();
     }
   }
+
+  // The bulk archive targets every complete lane at once (spec 5.6); this menu is the entry point
+  // surfaced on the complete lane's header.
+  function openLaneMenu(e: MouseEvent): void {
+    e.preventDefault();
+    const menu = new Menu();
+    menu.addItem((i) =>
+      i
+        .setTitle('完了カードをアーカイブ')
+        .setIcon('archive')
+        .onClick(() => void archiveCompleted()),
+    );
+    menu.showAtMouseEvent(e);
+  }
+
+  async function archiveCompleted(): Promise<void> {
+    const count = store.completedCardCount();
+    if (count === 0) return;
+    const ok = await confirmDialog(app, {
+      title: '完了カードをアーカイブ',
+      message: `完了レーンのカード ${count} 件を年月別にアーカイブへ移動します。よろしいですか？`,
+      cta: 'アーカイブ',
+    });
+    if (ok) store.archiveCompletedCards();
+  }
 </script>
 
 <div class="kf-lane" class:kf-lane-complete={column.isComplete}>
   <div class="kf-lane-header">
     <span class="kf-lane-title">{column.title}</span>
-    <span class="kf-lane-count">{column.items.length}</span>
+    <span class="kf-lane-header-right">
+      <span class="kf-lane-count">{column.items.length}</span>
+      {#if column.isComplete}
+        <button class="kf-lane-menu" aria-label="レーンメニュー" onclick={openLaneMenu}>⋯</button>
+      {/if}
+    </span>
   </div>
 
   <div
@@ -104,10 +136,27 @@
     font-weight: 600;
     padding: 4px 6px 8px;
   }
+  .kf-lane-header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
   .kf-lane-count {
     color: var(--text-muted);
     font-weight: 400;
     font-size: 0.85em;
+  }
+  .kf-lane-menu {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    font-size: 1em;
+  }
+  .kf-lane-menu:hover {
+    color: var(--text-normal);
   }
   .kf-lane-cards {
     display: flex;

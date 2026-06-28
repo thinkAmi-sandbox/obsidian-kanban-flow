@@ -51,12 +51,6 @@
     const menu = new Menu();
     menu.addItem((i) =>
       i
-        .setTitle('アーカイブ')
-        .setIcon('archive')
-        .onClick(() => store.archiveCard(card.id)),
-    );
-    menu.addItem((i) =>
-      i
         .setTitle('削除')
         .setIcon('trash')
         .onClick(async () => {

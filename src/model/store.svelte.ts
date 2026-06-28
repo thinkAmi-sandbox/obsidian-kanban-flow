@@ -3,8 +3,8 @@
 // mutation drives requestSave(). "today" is injected so this module never reads the clock.
 
 import { serializeBoard } from '../parser/serialize';
-import { makeCardRaw, setDisplayTitle, syncOnMove } from './metadata';
-import { appendCardToArchive } from './board-ops';
+import { archiveYearMonth, makeCardRaw, setDisplayTitle, syncOnMove } from './metadata';
+import { appendCardToArchiveByMonth } from './board-ops';
 import type { Board, Card, Lane } from './types';
 
 export interface StoreCallbacks {
@@ -123,14 +123,32 @@ export class BoardStore {
     this.cb.requestSave();
   }
 
-  archiveCard(cardId: string): void {
-    const from = this.laneOfCard(cardId);
-    if (!from) return;
-    const idx = from.cards.findIndex((c) => c.id === cardId);
-    if (idx === -1) return;
-    const [card] = from.cards.splice(idx, 1);
-    this.appendToArchive(card.titleRaw); // state unchanged: no ✅, no [x] (spec 4.3)
-    this.cb.requestSave();
+  /** Number of cards currently in complete lanes — the bulk-archive target (spec 5.6). */
+  completedCardCount(): number {
+    let n = 0;
+    for (const lane of this.board.lanes) if (lane.isComplete) n += lane.cards.length;
+    return n;
+  }
+
+  /**
+   * Bulk-archive every card in every complete lane, grouped by year-month (spec 5.6 / 4.3).
+   * Cards move verbatim (no ✅, no [x]); the grouping key is the completion date, falling back to
+   * the registration date, then today. Returns the number of cards moved (0 = no-op, no save).
+   */
+  archiveCompletedCards(): number {
+    const today = this.cb.today();
+    let moved = 0;
+    for (const lane of this.board.lanes) {
+      if (!lane.isComplete || lane.cards.length === 0) continue;
+      for (const card of lane.cards) {
+        const ym = archiveYearMonth(card.titleRaw, today);
+        this.board.archive = appendCardToArchiveByMonth(this.board.archive, card.titleRaw, ym);
+        moved++;
+      }
+      lane.cards = [];
+    }
+    if (moved > 0) this.cb.requestSave();
+    return moved;
   }
 
   deleteCard(cardId: string): void {
@@ -140,10 +158,6 @@ export class BoardStore {
     if (idx === -1) return;
     from.cards.splice(idx, 1);
     this.cb.requestSave();
-  }
-
-  private appendToArchive(raw: string): void {
-    this.board.archive = appendCardToArchive(this.board.archive, raw);
   }
 
   /** Helper used by the D&D layer to read a lane's plain (non-proxy) card list. */
