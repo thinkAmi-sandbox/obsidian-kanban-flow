@@ -1,10 +1,9 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import { Menu } from 'obsidian';
   import { getDisplayTitle } from '../model/metadata';
   import { KF_CONTEXT, type KfContext } from './context';
   import { confirmDialog } from './confirm';
-  import { autofocus } from './actions';
+  import { autofocus, icon } from './actions';
   import type { DndItem } from './dnd';
 
   let { card }: { card: DndItem } = $props();
@@ -46,28 +45,18 @@
     }
   }
 
-  function openMenu(e: MouseEvent): void {
-    e.preventDefault();
-    const menu = new Menu();
-    menu.addItem((i) =>
-      i
-        .setTitle('削除')
-        .setIcon('trash')
-        .onClick(async () => {
-          const ok = await confirmDialog(app, {
-            title: 'カードを削除',
-            message: `「${title}」を削除しますか？この操作は取り消せません(カードはファイルから削除されます)。`,
-            cta: '削除',
-            danger: true,
-          });
-          if (ok) store.deleteCard(card.id);
-        }),
-    );
-    menu.showAtMouseEvent(e);
+  async function confirmDelete(): Promise<void> {
+    const ok = await confirmDialog(app, {
+      title: 'カードを削除',
+      message: `「${title}」を削除しますか？この操作は取り消せません(カードはファイルから削除されます)。`,
+      cta: '削除',
+      danger: true,
+    });
+    if (ok) store.deleteCard(card.id);
   }
 </script>
 
-<div class="kf-card" oncontextmenu={openMenu} role="listitem">
+<div class="kf-card" role="listitem">
   {#if editing}
     <textarea
       class="kf-card-edit"
@@ -92,7 +81,7 @@
     >
       {title}
     </div>
-    <button class="kf-card-menu" aria-label="カードメニュー" onclick={openMenu}>⋯</button>
+    <button class="kf-card-delete" aria-label="カードを削除" onclick={confirmDelete} use:icon={'trash'}></button>
   {/if}
 </div>
 
@@ -111,20 +100,29 @@
     padding-right: 16px;
     cursor: text;
   }
-  .kf-card-menu {
+  .kf-card-delete {
     position: absolute;
     top: 2px;
     right: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
+    padding: 2px;
     opacity: 0;
   }
-  .kf-card:hover .kf-card-menu {
+  .kf-card-delete:hover {
+    color: var(--text-error);
+  }
+  .kf-card:hover .kf-card-delete {
     opacity: 1;
+  }
+  .kf-card-delete :global(svg) {
+    width: 14px;
+    height: 14px;
   }
   .kf-card-edit {
     width: 100%;
