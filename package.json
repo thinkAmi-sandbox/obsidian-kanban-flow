@@ -1,6 +1,6 @@
 {
   "name": "obsidian-kanban-flow",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Personal lightweight Kanban board for Obsidian (Svelte 5).",
   "type": "module",
   "scripts": {
