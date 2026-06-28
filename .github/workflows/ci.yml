@@ -1,0 +1,52 @@
+# Pre-merge CI gate.
+#
+# Runs on every pull request and on pushes to main, so broken code is caught BEFORE it lands on
+# main (not only at release time). build.yml runs the same checks again at release (tag push) as a
+# final gate; keeping both is intentional — this one guards merges, build.yml guards releases.
+#
+# To enforce "tests must pass before merging", make the `Test` job a required status check in the
+# main branch protection rule (see docs/release-process.md / repo settings).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
