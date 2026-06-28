@@ -43,6 +43,20 @@ dist/
   └── styles.css
 ```
 
+## リリース
+
+```bash
+npm version patch        # patch / minor / major。manifest.json も自動同期される
+git push --follow-tags   # v* タグ push で GitHub Actions が起動する
+```
+
+タグ push を起点に GitHub Actions がビルド・署名(SLSA provenance)・チェックサム生成を行い、
+自動生成ノート付きの **draft Release** を作成します。内容を確認して、GitHub UI から手動で
+Publish してください(自動公開はされません)。
+
+検証・後始末・設計の詳細は [docs/release-process.md](docs/release-process.md) を参照。
+Claude Code では `/release` スキルが手順を案内します。
+
 ## vault へのインストール(手動)
 
 `dist/` の中身を vault のプラグインフォルダへコピー(または `dist/` をシンボリックリンク):
