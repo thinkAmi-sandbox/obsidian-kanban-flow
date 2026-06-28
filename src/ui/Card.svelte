@@ -64,8 +64,7 @@
       onkeydown={onKeydown}
       onblur={commit}
       use:autofocus
-      rows="2"
-    ></textarea>
+      rows="2"></textarea>
   {:else}
     <div
       class="kf-card-title"
@@ -81,7 +80,12 @@
     >
       {title}
     </div>
-    <button class="kf-card-delete" aria-label="カードを削除" onclick={confirmDelete} use:icon={'trash'}></button>
+    <button
+      class="kf-card-delete"
+      aria-label="カードを削除"
+      onclick={confirmDelete}
+      use:icon={'trash'}
+    ></button>
   {/if}
 </div>
 

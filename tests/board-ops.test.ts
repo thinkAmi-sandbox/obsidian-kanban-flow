@@ -50,7 +50,11 @@ describe('appendCardToArchiveByMonth', () => {
 
   it('archived cards survive a parse round-trip', () => {
     const board = parseBoard(['---', 'kanban-plugin: board', '---', '', '## TODO', ''].join('\n'));
-    board.archive = appendCardToArchiveByMonth(board.archive, '- [x] task ✅ 2026-06-20', '2026-06');
+    board.archive = appendCardToArchiveByMonth(
+      board.archive,
+      '- [x] task ✅ 2026-06-20',
+      '2026-06',
+    );
 
     const out = serializeBoard(board);
     expect(out).toContain('## Archive\n\n### 2026-06\n\n- [x] task ✅ 2026-06-20');

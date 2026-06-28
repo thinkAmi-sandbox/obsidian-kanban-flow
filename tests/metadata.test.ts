@@ -87,7 +87,9 @@ describe('archiveYearMonth', () => {
 describe('setDisplayTitle', () => {
   it('keeps the existing registration date when only the title changes', () => {
     const raw = `- [ ] テスト ${ADDED_MARKER} 2026-06-27`;
-    expect(setDisplayTitle(raw, 'テスト2あいう')).toBe(`- [ ] テスト2あいう ${ADDED_MARKER} 2026-06-27`);
+    expect(setDisplayTitle(raw, 'テスト2あいう')).toBe(
+      `- [ ] テスト2あいう ${ADDED_MARKER} 2026-06-27`,
+    );
   });
 
   it('keeps the checkbox state and both dates', () => {

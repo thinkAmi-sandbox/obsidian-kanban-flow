@@ -92,9 +92,14 @@
 
   <div
     class="kf-lane-cards"
-    use:dndzone={{ items: column.items, type: CARD_DND_TYPE, flipDurationMs: FLIP_DURATION_MS, dropTargetStyle: {} }}
-    onconsider={onconsider}
-    onfinalize={onfinalize}
+    use:dndzone={{
+      items: column.items,
+      type: CARD_DND_TYPE,
+      flipDurationMs: FLIP_DURATION_MS,
+      dropTargetStyle: {},
+    }}
+    {onconsider}
+    {onfinalize}
   >
     {#each column.items as item (item.id)}
       <Card card={item} />
@@ -110,8 +115,7 @@
         onkeydown={onKeydown}
         onblur={commitAdd}
         use:autofocus
-        rows="2"
-      ></textarea>
+        rows="2"></textarea>
     {:else}
       <button class="kf-add-button" onclick={startAdd}>+ カードを追加</button>
     {/if}

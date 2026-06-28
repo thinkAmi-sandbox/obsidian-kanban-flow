@@ -19,7 +19,8 @@ export default class KanbanFlowPlugin extends Plugin {
       checkCallback: (checking) => {
         const leaf = this.app.workspace.activeLeaf;
         const file = this.app.workspace.getActiveFile();
-        const canOpen = !!leaf && !!file && file.extension === 'md' && leaf.view.getViewType() !== VIEW_TYPE;
+        const canOpen =
+          !!leaf && !!file && file.extension === 'md' && leaf.view.getViewType() !== VIEW_TYPE;
         if (canOpen && !checking) void this.setKanbanView(leaf);
         return canOpen;
       },
@@ -38,7 +39,9 @@ export default class KanbanFlowPlugin extends Plugin {
     });
 
     this.registerEvent(
-      this.app.workspace.on('file-menu', (menu, file, _source, leaf) => this.onFileMenu(menu, file, leaf)),
+      this.app.workspace.on('file-menu', (menu, file, _source, leaf) =>
+        this.onFileMenu(menu, file, leaf),
+      ),
     );
 
     // External-edit reflection (spec 8.3) with the self-save echo guard (spec 6.5).

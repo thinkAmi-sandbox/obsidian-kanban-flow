@@ -52,7 +52,9 @@
     <p>Markdown で開いて内容を修正してください。</p>
   </div>
 {:else if columns.length === 0}
-  <div class="kf-empty">レーンがありません。Markdown モードで <code>## 見出し</code> を追加してください。</div>
+  <div class="kf-empty">
+    レーンがありません。Markdown モードで <code>## 見出し</code> を追加してください。
+  </div>
 {:else}
   <div class="kf-board">
     {#each columns as column (column.id)}
