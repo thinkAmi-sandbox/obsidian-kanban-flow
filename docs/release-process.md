@@ -110,9 +110,5 @@ git push --force-with-lease origin <branch>
 
 ## 設計上の決定（背景）
 
-- **Immutable Releases は当面オフ**。公開後も Release の削除・編集・差し替えができる「やり直せる」
-  状態を優先する。改ざん対策は「ロック」ではなく **attestation 署名 + checksums** による検知で担保。
-- 署名は **keyless**（GitHub OIDC + Sigstore）。リポジトリ Secrets に鍵・トークンを置かないため、
-  漏洩しうる秘密が存在しない。
-- 多層の CI ガードは設けていない。`npm version` 経由に手順を固定することで、タグと各ファイルの
-  バージョン整合が**構造的に**保たれるため。
+このリリース基盤を「なぜそうしたか」（タグ起点・keyless 署名・draft 運用・SSoT など）は
+[release-design.md](release-design.md) に記録している。
