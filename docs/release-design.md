@@ -150,7 +150,7 @@
 
 - **決定**: [package.json](../package.json) の `allowScripts` で、依存の install 時ライフサイクルスクリプト
   （`preinstall` / `install` / `postinstall` など）を明示的に許可・拒否する。esbuild と fsevents は
-  **バージョン付き**（`esbuild@0.21.5`）で許可し、svelte-preprocess は拒否した。
+  **バージョン付き**（`esbuild@0.28.2`）で許可し、svelte-preprocess は拒否した。
 - **理由**: install スクリプトは `npm install` しただけで任意のコードが走る経路で、供給網攻撃の主要な入口。
   npm は現状「実行はするが未レビューの一覧を警告に出す」段階だが、将来のリリースで未レビューのスクリプトは
   ブロックされる。先に方針を決めておけば、その時に慌てて判断せずに済む。
