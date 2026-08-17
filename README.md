@@ -24,7 +24,11 @@ Svelte 5 でスクラッチ実装した、個人利用向けの軽量な Markdow
 
 ## 開発
 
+Node のバージョンは `.node-version` で固定しています([mise](https://mise.jdx.dev/) 前提。
+CI の setup-node も同じファイルを読みます)。
+
 ```bash
+mise install     # .node-version の Node を用意する
 npm install
 npm test         # vitest: round-trip / メタ分離 / 完了同期 / アーカイブ(受け入れ条件)
 npm run typecheck
