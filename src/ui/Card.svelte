@@ -4,12 +4,15 @@
   import { KF_CONTEXT, type KfContext } from './context';
   import { confirmDialog } from './confirm';
   import { autofocus, icon } from './actions';
+  import { tokenizeTitle } from './linkify';
   import type { DndItem } from './dnd';
 
   let { card }: { card: DndItem } = $props();
   const { store, app } = getContext<KfContext>(KF_CONTEXT);
 
   const title = $derived(getDisplayTitle(card.titleRaw));
+  // Display-only: `titleRaw` is untouched, so linkifying cannot affect what gets serialized.
+  const tokens = $derived(tokenizeTitle(title));
 
   // Inline editing is local component state; it commits to the store only on blur/Enter
   // and is discarded on Escape (spec / plan point 2: no per-keystroke saves).
@@ -45,6 +48,18 @@
     }
   }
 
+  /**
+   * Opens an accepted https link in the external browser. The anchor's default action is
+   * suppressed on purpose: letting it through would navigate the Obsidian window itself.
+   * Propagation is stopped too, so the click neither starts a card edit nor reaches
+   * Obsidian's own document-level anchor handling (which would open the URL a second time).
+   */
+  function openLink(e: MouseEvent, href: string): void {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(href, '_blank', 'noopener');
+  }
+
   async function confirmDelete(): Promise<void> {
     const ok = await confirmDialog(app, {
       title: 'カードを削除',
@@ -78,7 +93,15 @@
         }
       }}
     >
-      {title}
+      {#each tokens as token}{#if token.kind === 'link'}<a
+            class="kf-card-link"
+            href={token.href}
+            title={token.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            draggable="false"
+            onclick={(e) => openLink(e, token.href)}>{token.text}</a
+          >{:else}{token.text}{/if}{/each}
     </div>
     <button
       class="kf-card-delete"
@@ -103,6 +126,16 @@
     word-break: break-word;
     padding-right: 16px;
     cursor: text;
+  }
+  .kf-card-link {
+    color: var(--text-accent);
+    text-decoration: underline;
+    /* URLs have no spaces to break at, so let them wrap anywhere inside the narrow lane. */
+    word-break: break-all;
+    cursor: pointer;
+  }
+  .kf-card-link:hover {
+    color: var(--text-accent-hover);
   }
   .kf-card-delete {
     position: absolute;
