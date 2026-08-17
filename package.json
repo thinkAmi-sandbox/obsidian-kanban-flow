@@ -40,5 +40,10 @@
     "tslib": "^2.6.3",
     "typescript": "^5.4.5",
     "vitest": "^2.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "fsevents@2.3.3": true,
+    "svelte-preprocess": false
   }
 }
