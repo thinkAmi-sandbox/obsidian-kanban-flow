@@ -1,0 +1,8 @@
+# Node のバージョンは .node-version を真実源(SSoT)にする。
+#
+# mise はデフォルトでは .node-version を読まない(idiomatic_version_file_enable_tools の既定値は空)
+# ため、node だけ明示的に有効化する。ここで [tools] に node を書くと .node-version と二重管理に
+# なるので書かない。同じ .node-version を GitHub Actions の setup-node も参照する。
+# 判断の背景は docs/release-design.md の #9 を参照。
+[settings]
+idiomatic_version_file_enable_tools = ["node"]
